@@ -25,16 +25,16 @@ def load_image_as_base64(image_path):
 def create_html_viewer():
     """Create comprehensive HTML viewer for all articles"""
 
-    # Load articles (using FIXED commodities article with correct silver image)
+    # Load articles (using CORRECTED commodities article with correct silver image)
     forex_article = load_article('/home/odedbe/blog/output/test-forex-article.json')
     crypto_article = load_article('/home/odedbe/blog/output/test-crypto-article.json')
 
-    # Try FIXED version first, fallback to original
+    # Try CORRECTED version first, fallback to original
     try:
-        commodities_article = load_article('/home/odedbe/blog/output/test-commodities-article-FIXED.json')
-        print("✅ Using FIXED commodities article (correct silver image)")
+        commodities_article = load_article('/home/odedbe/blog/output/test-commodities-article-CORRECTED.json')
+        print("✅ Using CORRECTED commodities article (correct silver image)")
     except Exception as e:
-        print(f"⚠️ Could not load FIXED article: {e}")
+        print(f"⚠️ Could not load CORRECTED article: {e}")
         commodities_article = load_article('/home/odedbe/blog/output/test-commodities-article.json')
         print("⚠️ Using original commodities article")
 
