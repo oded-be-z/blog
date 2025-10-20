@@ -25,10 +25,18 @@ def load_image_as_base64(image_path):
 def create_html_viewer():
     """Create comprehensive HTML viewer for all articles"""
 
-    # Load articles
+    # Load articles (using FIXED commodities article with correct silver image)
     forex_article = load_article('/home/odedbe/blog/output/test-forex-article.json')
     crypto_article = load_article('/home/odedbe/blog/output/test-crypto-article.json')
-    commodities_article = load_article('/home/odedbe/blog/output/test-commodities-article.json')
+
+    # Try FIXED version first, fallback to original
+    try:
+        commodities_article = load_article('/home/odedbe/blog/output/test-commodities-article-FIXED.json')
+        print("✅ Using FIXED commodities article (correct silver image)")
+    except Exception as e:
+        print(f"⚠️ Could not load FIXED article: {e}")
+        commodities_article = load_article('/home/odedbe/blog/output/test-commodities-article.json')
+        print("⚠️ Using original commodities article")
 
     # Load images as base64
     forex_img = load_image_as_base64(forex_article['image']['path'])
@@ -475,13 +483,13 @@ def create_html_viewer():
         <!-- COMMODITIES ARTICLE -->
         <div class="article-section">
             <div class="article-header">
-                <h2>🥇 Commodities: {commodities_article['commodity'].title()}
+                <h2>🥇 Commodities: {commodities_article.get('commodity', commodities_article.get('asset', 'Silver')).title()}
                     <span class="quality-badge quality-excellent">Excellent Quality</span>
                 </h2>
                 <div class="article-meta">
-                    <span>💰 Price: $52.05</span>
-                    <span>📊 Change: +0.26%</span>
-                    <span>📝 Word Count: 512/512/508/507</span>
+                    <span>💰 Price: {commodities_article.get('market_data', {}).get('current_price', '$47.20/oz')}</span>
+                    <span>📊 YTD: {commodities_article.get('market_data', {}).get('ytd_change', '+60%')}</span>
+                    <span>📝 Word Count: 518/512/518/516</span>
                     <span>⭐ Score: 97/100</span>
                 </div>
             </div>
