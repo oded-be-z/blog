@@ -27,8 +27,8 @@ class AzureOpenAIClient:
         self,
         prompt: str,
         deployment: str = GPT5_DEPLOYMENT,
-        max_tokens: int = 1500,
-        temperature: float = 0.7
+        max_tokens: int = 5000,
+        temperature: float = None
     ) -> Dict:
         """
         Generate article content using GPT-5
@@ -36,8 +36,8 @@ class AzureOpenAIClient:
         Args:
             prompt: Article generation prompt
             deployment: GPT-5 model deployment name
-            max_tokens: Maximum tokens in response
-            temperature: Creativity level (0-1)
+            max_tokens: Maximum tokens in response (increased for reasoning models)
+            temperature: Creativity level (0-1), None for default. Note: GPT-5 only supports default temperature.
 
         Returns:
             Dict with generated content
@@ -55,9 +55,12 @@ class AzureOpenAIClient:
                     "content": prompt
                 }
             ],
-            "max_completion_tokens": max_tokens,
-            "temperature": temperature
+            "max_completion_tokens": max_tokens
         }
+
+        # Only add temperature if specified (GPT-5 reasoning models use default only)
+        if temperature is not None:
+            payload["temperature"] = temperature
 
         try:
             logger.info(f"Generating content with {deployment}...")
@@ -98,8 +101,8 @@ class AzureOpenAIClient:
         return self.generate_article(
             prompt=prompt,
             deployment=GPT5_DEPLOYMENT,
-            max_tokens=2000,
-            temperature=0.3  # Lower temperature for translation accuracy
+            max_tokens=6000,  # Higher for reasoning + translation
+            temperature=None  # Use default for GPT-5 reasoning models
         )
 
     def generate_seo_metadata(
@@ -126,8 +129,8 @@ class AzureOpenAIClient:
         result = self.generate_article(
             prompt=prompt,
             deployment=GPT5_DEPLOYMENT,
-            max_tokens=500,
-            temperature=0.5
+            max_tokens=2000,  # Increased for reasoning models
+            temperature=None  # Use default for GPT-5
         )
 
         if result["success"]:
@@ -176,8 +179,8 @@ Format as JSON."""
         return self.generate_article(
             prompt=prompt,
             deployment=GPT5_PRO_DEPLOYMENT,
-            max_tokens=800,
-            temperature=0.3
+            max_tokens=3000,  # Increased for reasoning models
+            temperature=None  # Use default for GPT-5
         )
 
     def _get_fallback_seo(self, category: str, asset: str) -> Dict:
