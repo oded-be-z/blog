@@ -8,7 +8,7 @@ from typing import Dict
 
 # Azure OpenAI Configuration
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_KEY")
-AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "https://brn-azai.openai.azure.com/")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "https://brn-azai.cognitiveservices.azure.com/")
 
 # GPT-5 Deployments
 GPT5_DEPLOYMENT = os.getenv("GPT5_DEPLOYMENT", "gpt-5")
