@@ -116,7 +116,9 @@ class ZapierDelivery:
         """
         import os
 
-        failed_dir = "/home/odedbe/blog/output/failed_deliveries"
+        # Get project root (3 levels up from this file: src/services/zapier_delivery.py)
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        failed_dir = os.path.join(project_root, "output", "failed_deliveries")
         os.makedirs(failed_dir, exist_ok=True)
 
         filepath = f"{failed_dir}/failed_{date_str}.json"

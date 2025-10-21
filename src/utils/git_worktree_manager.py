@@ -12,7 +12,20 @@ from loguru import logger
 class GitWorktreeManager:
     """Manages git worktrees for parallel article generation"""
 
-    def __init__(self, repo_path: str = "/home/odedbe/blog"):
+    def __init__(self, repo_path: str = None):
+        # Default to current git repository root
+        if repo_path is None:
+            try:
+                result = subprocess.run(
+                    ['git', 'rev-parse', '--show-toplevel'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                repo_path = result.stdout.strip()
+            except subprocess.CalledProcessError:
+                # Fallback to script location if not in git repo
+                repo_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         self.repo_path = repo_path
         self.worktrees: Dict[str, str] = {}
 
@@ -30,7 +43,10 @@ class GitWorktreeManager:
         logger.info(f"Creating worktrees for {len(categories)} categories")
 
         for category in categories:
-            worktree_path = f"/home/odedbe/blog-{category}"
+            # Create worktree in parent directory of the repository
+            repo_parent = os.path.dirname(self.repo_path)
+            repo_name = os.path.basename(self.repo_path)
+            worktree_path = os.path.join(repo_parent, f"{repo_name}-{category}")
             branch_name = f"daily/{category}-{date_str}"
 
             try:
@@ -107,7 +123,10 @@ class GitWorktreeManager:
         logger.info(f"Cleaning up {len(categories)} worktrees")
 
         for category in categories:
-            worktree_path = f"/home/odedbe/blog-{category}"
+            # Reconstruct worktree path
+            repo_parent = os.path.dirname(self.repo_path)
+            repo_name = os.path.basename(self.repo_path)
+            worktree_path = os.path.join(repo_parent, f"{repo_name}-{category}")
 
             try:
                 # Remove worktree

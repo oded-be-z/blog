@@ -23,8 +23,11 @@ import os
 from datetime import datetime
 from loguru import logger
 
+# Get project root directory (parent of src/)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Add src to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, PROJECT_ROOT)
 
 from utils.git_worktree_manager import GitWorktreeManager
 from services.zapier_delivery import ZapierDelivery
@@ -32,8 +35,11 @@ from services.html_formatter import HTMLFormatter
 
 
 # Configure logging
+LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
 logger.add(
-    "/home/odedbe/blog/logs/orchestrator_{time:YYYY-MM-DD}.log",
+    os.path.join(LOG_DIR, "orchestrator_{time:YYYY-MM-DD}.log"),
     rotation="1 day",
     retention="30 days",
     level="INFO"
@@ -203,8 +209,8 @@ class BlogOrchestrator:
 
     def _create_output_directories(self):
         """Create necessary output directories"""
-        os.makedirs("/home/odedbe/blog/output", exist_ok=True)
-        os.makedirs("/home/odedbe/blog/logs", exist_ok=True)
+        os.makedirs(os.path.join(PROJECT_ROOT, "output"), exist_ok=True)
+        os.makedirs(os.path.join(PROJECT_ROOT, "logs"), exist_ok=True)
 
 
 async def main():
