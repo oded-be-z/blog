@@ -6,7 +6,7 @@ Professional translations for GCC Arabic, Spanish, Portuguese
 
 from typing import Dict, List
 from loguru import logger
-from .azure_openai_client import AzureOpenAIClient
+from services.azure_openai_client import AzureOpenAIClient
 
 
 class TranslationService:

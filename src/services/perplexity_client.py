@@ -6,7 +6,7 @@ Deep web research for market intelligence
 import requests
 from typing import Dict, List
 from loguru import logger
-from ..config.credentials import PERPLEXITY_API_KEY, PERPLEXITY_ENDPOINT, get_api_headers
+from config.credentials import PERPLEXITY_API_KEY, PERPLEXITY_ENDPOINT, get_api_headers
 
 
 class PerplexityClient:

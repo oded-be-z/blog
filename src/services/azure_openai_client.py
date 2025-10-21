@@ -6,7 +6,7 @@ Wrapper for Azure OpenAI MCP tools: consult_gpt5, consult_gpt5_pro, consult_gpt5
 import requests
 from typing import Dict, Optional
 from loguru import logger
-from ..config.credentials import (
+from config.credentials import (
     AZURE_OPENAI_KEY,
     AZURE_OPENAI_ENDPOINT,
     GPT5_DEPLOYMENT,

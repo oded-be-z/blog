@@ -7,7 +7,7 @@ import requests
 import json
 from typing import List, Dict
 from loguru import logger
-from ..config.credentials import ZAPIER_WEBHOOK_URL
+from config.credentials import ZAPIER_WEBHOOK_URL
 
 
 class ZapierDelivery:

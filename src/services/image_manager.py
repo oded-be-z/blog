@@ -7,7 +7,7 @@ import os
 import random
 from typing import Optional, List
 from loguru import logger
-from ..config.credentials import TRADING_IMAGES_PATH, TRADING_IMAGES_URL
+from config.credentials import TRADING_IMAGES_PATH, TRADING_IMAGES_URL
 
 
 class ImageManager:
