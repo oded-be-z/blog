@@ -85,7 +85,8 @@ class AzureOpenAIClient:
 
         try:
             logger.info(f"Generating content with {deployment}...")
-            timeout = 120 if is_responses_api else 90  # Longer timeout for Responses API
+            # GPT-5-Pro needs much longer timeout for complex reasoning (3-4 minutes typical)
+            timeout = 300 if is_responses_api else 90  # 5 minutes for Responses API, 90s for standard
             response = requests.post(url, headers=self.headers, json=payload, timeout=timeout)
             response.raise_for_status()
 
