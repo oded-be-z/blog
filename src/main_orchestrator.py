@@ -131,7 +131,14 @@ class BlogOrchestrator:
             logger.success(f"Zapier Delivery: {'✅ Success' if delivery_result['success'] else '❌ Failed (saved locally)'}")
             logger.success(f"=" * 80)
 
-            return delivery_result
+            # Return success if articles were generated, even if Zapier delivery failed
+            # Articles are saved locally for manual delivery if webhook fails
+            return {
+                "success": True,
+                "articles_generated": len(valid_articles),
+                "zapier_delivery": delivery_result,
+                "execution_time": execution_time
+            }
 
         except Exception as e:
             logger.error(f"❌ Blog generation failed: {e}")
