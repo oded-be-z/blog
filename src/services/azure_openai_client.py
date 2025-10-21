@@ -4,6 +4,7 @@ Wrapper for Azure OpenAI MCP tools: consult_gpt5, consult_gpt5_pro, consult_gpt5
 """
 
 import requests
+import time
 from typing import Dict, Optional
 from loguru import logger
 from config.credentials import (
@@ -83,51 +84,93 @@ class AzureOpenAIClient:
             if temperature is not None:
                 payload["temperature"] = temperature
 
-        try:
-            logger.info(f"Generating content with {deployment}...")
-            # GPT-5-Pro needs much longer timeout for complex reasoning (3-4 minutes typical)
-            timeout = 300 if is_responses_api else 90  # 5 minutes for Responses API, 90s for standard
-            response = requests.post(url, headers=self.headers, json=payload, timeout=timeout)
-            response.raise_for_status()
+        # Retry logic for transient errors
+        max_retries = 3
+        retry_delay = 2  # seconds
 
-            data = response.json()
+        for attempt in range(max_retries):
+            try:
+                if attempt > 0:
+                    logger.info(f"Retry attempt {attempt + 1}/{max_retries} for {deployment}...")
+                    time.sleep(retry_delay * attempt)  # Exponential backoff
 
-            # Extract content based on API type
-            if is_responses_api:
-                # Responses API returns output array
-                if data.get("output") and isinstance(data["output"], list):
-                    # Find message object
-                    message_obj = next((item for item in data["output"] if item.get("type") == "message"), None)
+                logger.info(f"Generating content with {deployment}...")
+                # GPT-5-Pro needs much longer timeout for complex reasoning (3-4 minutes typical)
+                timeout = 300 if is_responses_api else 90  # 5 minutes for Responses API, 90s for standard
+                response = requests.post(url, headers=self.headers, json=payload, timeout=timeout)
+                response.raise_for_status()
 
-                    if message_obj and message_obj.get("content") and isinstance(message_obj["content"], list):
-                        # Extract text from content items
-                        content = "\n\n".join(
-                            item.get("text", "")
-                            for item in message_obj["content"]
-                            if item.get("text")
-                        )
+                data = response.json()
+
+                # Extract content based on API type
+                if is_responses_api:
+                    # Responses API returns output array
+                    if data.get("output") and isinstance(data["output"], list):
+                        # Find message object
+                        message_obj = next((item for item in data["output"] if item.get("type") == "message"), None)
+
+                        if message_obj and message_obj.get("content") and isinstance(message_obj["content"], list):
+                            # Extract text from content items
+                            content = "\n\n".join(
+                                item.get("text", "")
+                                for item in message_obj["content"]
+                                if item.get("text")
+                            )
+                        else:
+                            content = str(data["output"])
                     else:
-                        content = str(data["output"])
+                        content = data.get("output", "")
+
+                    # Map usage tokens (Responses API uses different field names)
+                    usage = {
+                        "prompt_tokens": data.get("usage", {}).get("input_tokens", 0),
+                        "completion_tokens": data.get("usage", {}).get("output_tokens", 0),
+                        "total_tokens": data.get("usage", {}).get("total_tokens", 0)
+                    }
                 else:
-                    content = data.get("output", "")
+                    # Standard Chat Completions format
+                    content = data["choices"][0]["message"]["content"]
+                    usage = data.get("usage", {})
 
-                # Map usage tokens (Responses API uses different field names)
-                usage = {
-                    "prompt_tokens": data.get("usage", {}).get("input_tokens", 0),
-                    "completion_tokens": data.get("usage", {}).get("output_tokens", 0),
-                    "total_tokens": data.get("usage", {}).get("total_tokens", 0)
-                }
-            else:
-                # Standard Chat Completions format
-                content = data["choices"][0]["message"]["content"]
-                usage = data.get("usage", {})
+                # Check if content is empty
+                if not content or len(content) == 0:
+                    logger.warning(f"Empty content returned from {deployment}, retrying...")
+                    if attempt < max_retries - 1:
+                        continue
+                    else:
+                        return {"success": False, "error": "Empty content returned after retries"}
 
-            logger.success(f"Article generated ({len(content)} chars)")
-            return {"success": True, "content": content, "usage": usage}
+                logger.success(f"Article generated ({len(content)} chars)")
+                return {"success": True, "content": content, "usage": usage}
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Azure OpenAI API error: {e}")
-            return {"success": False, "error": str(e)}
+            except requests.exceptions.HTTPError as e:
+                # Check if it's a 4xx error (client error) - don't retry these unless it's 429 (rate limit)
+                if e.response.status_code == 429:
+                    logger.warning(f"Rate limit hit, will retry after backoff...")
+                    if attempt < max_retries - 1:
+                        continue
+                elif 400 <= e.response.status_code < 500:
+                    logger.error(f"Client error {e.response.status_code}: {e}")
+                    # For 400 errors, try one more time with a delay
+                    if attempt < max_retries - 1:
+                        logger.info("Retrying 400 error after delay...")
+                        continue
+                    return {"success": False, "error": str(e)}
+                else:
+                    # 5xx errors - retry
+                    logger.warning(f"Server error, will retry: {e}")
+                    if attempt < max_retries - 1:
+                        continue
+                    return {"success": False, "error": str(e)}
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Azure OpenAI API error: {e}")
+                if attempt < max_retries - 1:
+                    logger.info("Retrying after network error...")
+                    continue
+                return {"success": False, "error": str(e)}
+
+        # If we get here, all retries failed
+        return {"success": False, "error": f"All {max_retries} retry attempts failed"}
 
     def translate_content(
         self,
