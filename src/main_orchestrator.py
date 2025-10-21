@@ -32,6 +32,11 @@ sys.path.insert(0, PROJECT_ROOT)
 from utils.git_worktree_manager import GitWorktreeManager
 from services.zapier_delivery import ZapierDelivery
 from services.html_formatter import HTMLFormatter
+from agents.content_generation_agent import (
+    generate_forex_article,
+    generate_crypto_article,
+    generate_commodities_article
+)
 
 
 # Configure logging
@@ -79,20 +84,11 @@ class BlogOrchestrator:
                 date_str=self.date_str
             )
 
-            # Phase 3: Launch Parallel Agents
-            logger.info("PHASE 3: Launching 3 Parallel Sub-Agents")
-            # NOTE: In actual implementation, this would use the Task tool
-            # For now, we'll create the workflow and document how to use Task
+            # Phase 3: Launch Parallel Agents (Real AI Content Generation)
+            logger.info("PHASE 3: Launching 3 Parallel AI Agents")
+            logger.info("🤖 Using GPT-5-Pro + Perplexity for real content generation...")
 
-            logger.info("⚠️  Manual Agent Launch Required:")
-            logger.info("Use Claude Code's Task tool to launch 3 parallel agents:")
-            logger.info("1. Task(subagent_type='general-purpose', prompt=FOREX_AGENT_PROMPT)")
-            logger.info("2. Task(subagent_type='general-purpose', prompt=CRYPTO_AGENT_PROMPT)")
-            logger.info("3. Task(subagent_type='general-purpose', prompt=COMMODITIES_AGENT_PROMPT)")
-
-            # For testing, we'll simulate agent outputs
-            logger.warning("Running in simulation mode for testing...")
-            articles = await self._simulate_agent_outputs()
+            articles = await self._generate_articles_parallel(worktrees)
 
             # Phase 4: Merge Branches
             logger.info("PHASE 4: Merging Git Branches")
@@ -145,52 +141,56 @@ class BlogOrchestrator:
             logger.exception(e)
             return {"success": False, "error": str(e)}
 
-    async def _simulate_agent_outputs(self):
-        """Simulate agent outputs for testing (replace with actual Task tool calls)"""
-        logger.info("Simulating parallel agent execution...")
+    async def _generate_articles_parallel(self, worktrees: Dict[str, str]) -> list:
+        """
+        Generate articles in parallel using real AI agents
 
-        # In production, this would be:
-        # async with asyncio.TaskGroup() as tg:
-        #     forex_task = tg.create_task(self._launch_forex_agent())
-        #     crypto_task = tg.create_task(self._launch_crypto_agent())
-        #     commodities_task = tg.create_task(self._launch_commodities_agent())
+        Args:
+            worktrees: Dict mapping category to worktree path
 
-        # Simulate processing time
-        await asyncio.sleep(2)
+        Returns:
+            List of article packages
+        """
+        logger.info("Starting parallel AI content generation...")
 
-        # Return mock articles
-        return [
-            self._create_mock_article("forex", "EUR/USD"),
-            self._create_mock_article("crypto", "Bitcoin"),
-            self._create_mock_article("commodities", "Gold")
-        ]
-
-    def _create_mock_article(self, category: str, asset: str):
-        """Create mock article for testing"""
-        return {
-            "category": category,
-            "asset": asset,
-            "generated_at": datetime.now().isoformat(),
-            "market_data": {
-                "price": "1.0845" if category == "forex" else "$110,818",
-                "change": "+0.32%",
-                "drivers": "Market analysis"
-            },
-            "languages": {
-                "en": {
-                    "html": f"<article><h1>{asset} Analysis</h1><p>Mock content...</p></article>",
-                    "seo": {
-                        "title": f"{asset} Analysis | {category.title()} | Seekapa",
-                        "description": f"Professional {asset} analysis...",
-                        "keywords": [asset, category, "trading"],
-                        "image_alt": f"{asset} trading chart"
-                    }
-                },
-                "ar": {"html": "..."},
-                "es": {"html": "..."},
-                "pt-BR": {"html": "..."}
-            }
+        # Create tasks for all 3 agents
+        tasks = {
+            "forex": asyncio.create_task(
+                generate_forex_article(worktrees.get("forex", ""))
+            ),
+            "crypto": asyncio.create_task(
+                generate_crypto_article(worktrees.get("crypto", ""))
+            ),
+            "commodities": asyncio.create_task(
+                generate_commodities_article(worktrees.get("commodities", ""))
+            )
         }
+
+        # Wait for all agents to complete
+        logger.info("⏳ Waiting for all 3 agents to complete...")
+        results = {}
+        for category, task in tasks.items():
+            try:
+                result = await task
+                results[category] = result
+                if result.get("success"):
+                    logger.success(f"✅ {category} agent completed successfully")
+                else:
+                    logger.error(f"❌ {category} agent failed: {result.get('error')}")
+            except Exception as e:
+                logger.error(f"❌ {category} agent exception: {e}")
+                results[category] = {"success": False, "error": str(e)}
+
+        # Extract article packages from successful results
+        articles = []
+        for category, result in results.items():
+            if result.get("success") and "package" in result:
+                articles.append(result["package"])
+            else:
+                logger.warning(f"⚠️  {category} article not included (failed or incomplete)")
+
+        logger.info(f"Collected {len(articles)} articles from parallel generation")
+        return articles
 
     def _validate_articles(self, articles):
         """Validate article quality"""

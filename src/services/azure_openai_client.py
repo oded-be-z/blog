@@ -94,7 +94,7 @@ class AzureOpenAIClient:
         Returns:
             Dict with translated content
         """
-        from ..config.prompts import get_translation_prompt
+        from config.prompts import get_translation_prompt
 
         prompt = get_translation_prompt(text, target_language, context)
 
@@ -122,7 +122,7 @@ class AzureOpenAIClient:
         Returns:
             Dict with SEO metadata (title, description, keywords, image_alt)
         """
-        from ..config.prompts import get_seo_metadata_prompt
+        from config.prompts import get_seo_metadata_prompt
 
         prompt = get_seo_metadata_prompt(article, category, asset)
 
