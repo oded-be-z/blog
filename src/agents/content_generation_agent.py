@@ -18,6 +18,7 @@ from services.azure_openai_client import AzureOpenAIClient
 from services.translation_service import TranslationService
 from services.image_manager import ImageManager
 from services.html_formatter import HTMLFormatter
+from services.quality_validator import QualityValidator
 from config.prompts import get_article_generation_prompt
 
 
@@ -41,6 +42,7 @@ class ContentGenerationAgent:
         self.translator = TranslationService()
         self.image_manager = ImageManager()
         self.html_formatter = HTMLFormatter()
+        self.validator = QualityValidator()
 
         logger.info(f"Initialized {category} content generation agent")
 
@@ -73,6 +75,33 @@ class ContentGenerationAgent:
             if not english_article["success"]:
                 logger.error(f"Article generation failed: {english_article.get('error')}")
                 return {"success": False, "error": "Article generation failed"}
+
+            # Phase 2.5: Validate and Improve Article Quality
+            logger.info(f"🔍 Phase 2.5: Validating article quality with AI")
+            validation_result = self.validator.validate_article(
+                article=english_article["content"],
+                category=self.category,
+                asset=asset_data["asset"]
+            )
+
+            logger.info(f"Quality score: {validation_result.get('quality_score', 0)}/100")
+            logger.info(f"Recommendation: {validation_result.get('recommendation', 'UNKNOWN')}")
+
+            if validation_result.get("recommendation") == "IMPROVE":
+                logger.warning(f"Article needs improvement. Issues: {validation_result.get('issues', [])}")
+                improved_article = self.validator.improve_article_if_needed(
+                    article=english_article["content"],
+                    validation_result=validation_result,
+                    category=self.category,
+                    asset=asset_data["asset"]
+                )
+                english_article["content"] = improved_article
+                logger.success("Article improved based on AI feedback")
+            elif validation_result.get("recommendation") == "REJECT":
+                logger.error(f"Article quality too low (score: {validation_result.get('quality_score')})")
+                return {"success": False, "error": "Article quality below acceptable threshold"}
+            else:
+                logger.success(f"Article quality validated (score: {validation_result.get('quality_score')})")
 
             # Phase 3: Generate SEO Metadata
             logger.info(f"🎯 Phase 3: Generating SEO metadata")
@@ -186,31 +215,61 @@ class ContentGenerationAgent:
         return translations
 
     async def _translate_to_language(self, text: str, language: str) -> Dict:
-        """Translate to a specific language"""
+        """Translate to a specific language with validation and retry"""
         logger.info(f"Translating to {language}...")
 
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None,
-            self.openai.translate_content,
-            text,
-            language,
-            self.category
-        )
+        max_retries = 3
+        for attempt in range(max_retries):
+            if attempt > 0:
+                logger.info(f"Retry attempt {attempt + 1}/{max_retries} for {language} translation")
 
-        if result["success"]:
-            logger.success(f"{language} translation completed")
-            return {
-                "success": True,
-                "translated_content": result["content"],
-                "word_count": len(result["content"].split())
-            }
-        else:
-            logger.error(f"{language} translation failed: {result.get('error')}")
-            return {
-                "success": False,
-                "error": result.get("error")
-            }
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                self.openai.translate_content,
+                text,
+                language,
+                self.category
+            )
+
+            if result["success"]:
+                # Validate translation quality
+                validation = self.validator.validate_translation(
+                    original=text,
+                    translated=result["content"],
+                    language=language,
+                    category=self.category
+                )
+
+                if validation.get("recommendation") == "RETRY":
+                    logger.warning(f"{language} translation validation failed: {validation.get('issues', [])}")
+                    if attempt < max_retries - 1:
+                        logger.info(f"Retrying {language} translation due to quality issues")
+                        continue
+                    else:
+                        logger.error(f"{language} translation failed validation after {max_retries} attempts")
+                        return {
+                            "success": False,
+                            "error": f"Translation validation failed: {validation.get('issues', [])}"
+                        }
+
+                logger.success(f"{language} translation completed and validated (score: {validation.get('quality_score', 0)})")
+                return {
+                    "success": True,
+                    "translated_content": result["content"],
+                    "word_count": len(result["content"].split()),
+                    "quality_score": validation.get("quality_score", 0)
+                }
+            else:
+                logger.warning(f"{language} translation attempt {attempt + 1} failed: {result.get('error')}")
+                if attempt < max_retries - 1:
+                    continue
+
+        logger.error(f"{language} translation failed after {max_retries} attempts")
+        return {
+            "success": False,
+            "error": f"Translation failed after {max_retries} attempts"
+        }
 
     def _create_article_package(
         self,
