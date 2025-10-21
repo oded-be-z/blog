@@ -1,0 +1,108 @@
+{
+  "articles": [
+    {
+      "category": "forex",
+      "asset": "EUR/USD",
+      "generated_at": "2025-10-21T05:55:48.057580",
+      "market_data": {
+        "price": "1.0845",
+        "change": "+0.32%",
+        "drivers": "Market analysis"
+      },
+      "languages": {
+        "en": {
+          "html": "<article><h1>EUR/USD Analysis</h1><p>Mock content...</p></article>",
+          "seo": {
+            "title": "EUR/USD Analysis | Forex | Seekapa",
+            "description": "Professional EUR/USD analysis...",
+            "keywords": [
+              "EUR/USD",
+              "forex",
+              "trading"
+            ],
+            "image_alt": "EUR/USD trading chart"
+          }
+        },
+        "ar": {
+          "html": "..."
+        },
+        "es": {
+          "html": "..."
+        },
+        "pt-BR": {
+          "html": "..."
+        }
+      }
+    },
+    {
+      "category": "crypto",
+      "asset": "Bitcoin",
+      "generated_at": "2025-10-21T05:55:48.057630",
+      "market_data": {
+        "price": "$110,818",
+        "change": "+0.32%",
+        "drivers": "Market analysis"
+      },
+      "languages": {
+        "en": {
+          "html": "<article><h1>Bitcoin Analysis</h1><p>Mock content...</p></article>",
+          "seo": {
+            "title": "Bitcoin Analysis | Crypto | Seekapa",
+            "description": "Professional Bitcoin analysis...",
+            "keywords": [
+              "Bitcoin",
+              "crypto",
+              "trading"
+            ],
+            "image_alt": "Bitcoin trading chart"
+          }
+        },
+        "ar": {
+          "html": "..."
+        },
+        "es": {
+          "html": "..."
+        },
+        "pt-BR": {
+          "html": "..."
+        }
+      }
+    },
+    {
+      "category": "commodities",
+      "asset": "Gold",
+      "generated_at": "2025-10-21T05:55:48.057642",
+      "market_data": {
+        "price": "$110,818",
+        "change": "+0.32%",
+        "drivers": "Market analysis"
+      },
+      "languages": {
+        "en": {
+          "html": "<article><h1>Gold Analysis</h1><p>Mock content...</p></article>",
+          "seo": {
+            "title": "Gold Analysis | Commodities | Seekapa",
+            "description": "Professional Gold analysis...",
+            "keywords": [
+              "Gold",
+              "commodities",
+              "trading"
+            ],
+            "image_alt": "Gold trading chart"
+          }
+        },
+        "ar": {
+          "html": "..."
+        },
+        "es": {
+          "html": "..."
+        },
+        "pt-BR": {
+          "html": "..."
+        }
+      }
+    }
+  ],
+  "generated_at": "2025-10-21T05:55:48.057580",
+  "note": "This delivery failed. Retry manually by posting to Zapier webhook."
+}

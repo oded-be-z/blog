@@ -27,22 +27,23 @@ class AzureOpenAIClient:
         self,
         prompt: str,
         deployment: str = GPT5_DEPLOYMENT,
-        max_tokens: int = 5000,
+        max_tokens: int = 16384,
         temperature: float = None
     ) -> Dict:
         """
-        Generate article content using GPT-5
+        Generate article content using GPT-5 or GPT-5-Pro
 
         Args:
             prompt: Article generation prompt
-            deployment: GPT-5 model deployment name
-            max_tokens: Maximum tokens in response (increased for reasoning models)
+            deployment: GPT-5 model deployment name (gpt-5 or gpt-5-pro)
+            max_tokens: Maximum tokens in response (16384 for GPT-5-Pro)
             temperature: Creativity level (0-1), None for default. Note: GPT-5 only supports default temperature.
 
         Returns:
             Dict with generated content
         """
-        url = f"{self.endpoint}openai/deployments/{deployment}/chat/completions?api-version=2025-01-01-preview"
+        # Use correct API version for GPT-5-Pro: 2024-12-01-preview
+        url = f"{self.endpoint}openai/deployments/{deployment}/chat/completions?api-version=2024-12-01-preview"
 
         payload = {
             "messages": [

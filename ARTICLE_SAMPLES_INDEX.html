@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seekapa - Automated Blog Article Samples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.85;
+        }
+
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .article-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .article-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .article-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .article-content {
+            padding: 30px;
+        }
+
+        .article-category {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .forex { background: #ddd6fe; color: #5b21b6; }
+        .crypto { background: #fef3c7; color: #92400e; }
+        .commodities { background: #fef9c3; color: #713f12; }
+
+        .article-title {
+            font-size: 1.5rem;
+            color: #1a202c;
+            margin-bottom: 15px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .article-excerpt {
+            color: #4a5568;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .meta-item {
+            font-size: 0.9rem;
+            color: #718096;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .view-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .view-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .features {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .features h2 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .feature-description {
+            color: #718096;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SEEKAPA</h1>
+            <p>Automated Trading Blog Articles</p>
+            <p class="subtitle">AI-Powered Multi-Agent Content Generation System</p>
+        </div>
+
+        <div class="articles-grid">
+            <!-- Forex Article -->
+            <div class="article-card" onclick="window.open('SAMPLE_ARTICLE_FOREX.html', '_blank')">
+                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop"
+                     alt="Forex Trading Chart"
+                     class="article-image"
+                     onerror="this.style.display='none'">
+                <div class="article-content">
+                    <span class="article-category forex">FOREX</span>
+                    <h3 class="article-title">EUR/USD Analysis: Euro Strengthens Amid ECB Policy Signals</h3>
+                    <p class="article-excerpt">
+                        The EUR/USD pair has shown notable strength, climbing to 1.0845 as the Euro gains momentum against the US Dollar. ECB signals potential policy shifts creating renewed investor interest.
+                    </p>
+                    <div class="article-meta">
+                        <span class="meta-item">📊 EUR/USD</span>
+                        <span class="meta-item">📈 +0.32%</span>
+                        <span class="meta-item">⏱ 5 min read</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <a href="SAMPLE_ARTICLE_FOREX.html" target="_blank" class="view-button">View Full Article →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crypto Article -->
+            <div class="article-card" onclick="window.open('SAMPLE_ARTICLE_CRYPTO.html', '_blank')">
+                <img src="https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&h=400&fit=crop"
+                     alt="Bitcoin Cryptocurrency"
+                     class="article-image"
+                     onerror="this.style.display='none'">
+                <div class="article-content">
+                    <span class="article-category crypto">CRYPTOCURRENCY</span>
+                    <h3 class="article-title">Bitcoin Surges Past $110K as Institutional Adoption Accelerates</h3>
+                    <p class="article-excerpt">
+                        Bitcoin has shattered previous records, surging past the $110,000 mark as institutional investors continue to pour capital into the leading cryptocurrency.
+                    </p>
+                    <div class="article-meta">
+                        <span class="meta-item">₿ BTC/USD</span>
+                        <span class="meta-item">📈 +5.7%</span>
+                        <span class="meta-item">⏱ 6 min read</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <a href="SAMPLE_ARTICLE_CRYPTO.html" target="_blank" class="view-button">View Full Article →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commodities Article -->
+            <div class="article-card" onclick="window.open('SAMPLE_ARTICLE_GOLD.html', '_blank')">
+                <img src="https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=400&fit=crop"
+                     alt="Gold Bullion"
+                     class="article-image"
+                     onerror="this.style.display='none'">
+                <div class="article-content">
+                    <span class="article-category commodities">COMMODITIES</span>
+                    <h3 class="article-title">Gold Hits $2,680/oz as Safe-Haven Demand Intensifies</h3>
+                    <p class="article-excerpt">
+                        Gold prices have surged to $2,680 per ounce, marking a significant milestone fueled by geopolitical uncertainty, inflation concerns, and robust central bank purchases.
+                    </p>
+                    <div class="article-meta">
+                        <span class="meta-item">🏅 XAU/USD</span>
+                        <span class="meta-item">📈 +1.8%</span>
+                        <span class="meta-item">⏱ 5 min read</span>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <a href="SAMPLE_ARTICLE_GOLD.html" target="_blank" class="view-button">View Full Article →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>Automated Content Generation Features</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">Multilingual Support</div>
+                    <div class="feature-description">
+                        Each article automatically generated in 4 languages: English, Gulf Arabic, Spanish, and Brazilian Portuguese
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Real-Time Data</div>
+                    <div class="feature-description">
+                        Live market data integration via Perplexity API for accurate, up-to-date financial information
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI-Powered</div>
+                    <div class="feature-description">
+                        Content generated using GPT-5, GPT-5-Pro, and GPT-5-Codex for professional quality
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-title">Daily Automation</div>
+                    <div class="feature-description">
+                        Fully automated daily content generation via GitHub Actions workflow
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">SEO Optimized</div>
+                    <div class="feature-description">
+                        Complete SEO metadata, Open Graph tags, and Twitter cards for maximum reach
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">📸</div>
+                    <div class="feature-title">Image Integration</div>
+                    <div class="feature-description">
+                        Automatic image selection from curated trading images repository
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; color: white;">
+            <p style="font-size: 1.2rem; margin-bottom: 10px;">🤖 Generated with Claude Code</p>
+            <p style="opacity: 0.9;">Multi-Agent Architecture | Parallel Processing | Production Ready</p>
+        </div>
+    </div>
+</body>
+</html>
