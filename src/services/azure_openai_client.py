@@ -42,37 +42,87 @@ class AzureOpenAIClient:
         Returns:
             Dict with generated content
         """
-        # Use correct API version for GPT-5-Pro: 2024-12-01-preview
-        url = f"{self.endpoint}openai/deployments/{deployment}/chat/completions?api-version=2024-12-01-preview"
+        # GPT-5-Pro uses Responses API, GPT-5 uses Chat Completions API
+        is_responses_api = deployment == "gpt-5-pro"
 
-        payload = {
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a professional forex/crypto/commodities trading content writer for Seekapa, a regulated forex broker."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "max_completion_tokens": max_tokens
-        }
+        if is_responses_api:
+            # Responses API (GPT-5-Pro)
+            url = f"{self.endpoint}openai/responses?api-version=2025-04-01-preview"
 
-        # Only add temperature if specified (GPT-5 reasoning models use default only)
-        if temperature is not None:
-            payload["temperature"] = temperature
+            # Combine system message and prompt into single input
+            full_input = "You are a professional forex/crypto/commodities trading content writer for Seekapa, a regulated forex broker.\n\n" + prompt
+
+            payload = {
+                "model": deployment,
+                "input": full_input,
+                "max_output_tokens": max_tokens
+            }
+
+            # Only add temperature if specified
+            if temperature is not None:
+                payload["temperature"] = temperature
+        else:
+            # Chat Completions API (GPT-5 standard)
+            url = f"{self.endpoint}openai/deployments/{deployment}/chat/completions?api-version=2024-12-01-preview"
+
+            payload = {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a professional forex/crypto/commodities trading content writer for Seekapa, a regulated forex broker."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                "max_completion_tokens": max_tokens
+            }
+
+            # Only add temperature if specified
+            if temperature is not None:
+                payload["temperature"] = temperature
 
         try:
             logger.info(f"Generating content with {deployment}...")
-            response = requests.post(url, headers=self.headers, json=payload, timeout=90)
+            timeout = 120 if is_responses_api else 90  # Longer timeout for Responses API
+            response = requests.post(url, headers=self.headers, json=payload, timeout=timeout)
             response.raise_for_status()
 
             data = response.json()
-            content = data["choices"][0]["message"]["content"]
+
+            # Extract content based on API type
+            if is_responses_api:
+                # Responses API returns output array
+                if data.get("output") and isinstance(data["output"], list):
+                    # Find message object
+                    message_obj = next((item for item in data["output"] if item.get("type") == "message"), None)
+
+                    if message_obj and message_obj.get("content") and isinstance(message_obj["content"], list):
+                        # Extract text from content items
+                        content = "\n\n".join(
+                            item.get("text", "")
+                            for item in message_obj["content"]
+                            if item.get("text")
+                        )
+                    else:
+                        content = str(data["output"])
+                else:
+                    content = data.get("output", "")
+
+                # Map usage tokens (Responses API uses different field names)
+                usage = {
+                    "prompt_tokens": data.get("usage", {}).get("input_tokens", 0),
+                    "completion_tokens": data.get("usage", {}).get("output_tokens", 0),
+                    "total_tokens": data.get("usage", {}).get("total_tokens", 0)
+                }
+            else:
+                # Standard Chat Completions format
+                content = data["choices"][0]["message"]["content"]
+                usage = data.get("usage", {})
 
             logger.success(f"Article generated ({len(content)} chars)")
-            return {"success": True, "content": content, "usage": data.get("usage", {})}
+            return {"success": True, "content": content, "usage": usage}
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Azure OpenAI API error: {e}")
