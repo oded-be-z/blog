@@ -132,7 +132,7 @@ class ContentGenerationAgent:
         return result
 
     async def _generate_english_article(self, asset_data: Dict) -> Dict:
-        """Generate English article using GPT-5-Pro"""
+        """Generate English article using GPT-5"""
         prompt = get_article_generation_prompt(
             category=self.category,
             asset=asset_data["asset"],
@@ -145,7 +145,7 @@ class ContentGenerationAgent:
             None,
             self.openai.generate_article,
             prompt,
-            "gpt-5-pro"  # Use GPT-5-Pro for main content
+            "gpt-5"  # Use GPT-5 for main content (fallback from gpt-5-pro)
         )
 
         return result
