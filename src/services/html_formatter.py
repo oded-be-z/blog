@@ -156,6 +156,11 @@ class HTMLFormatter:
             "asset": asset,
             "market_data": market_data,
             "generated_at": datetime.now().isoformat(),
+            "image": {
+                "url": image_data.get("image_url"),
+                "alt": image_data.get("image_alt"),
+                "source": image_data.get("source", "unknown")
+            },
             "languages": {}
         }
 
